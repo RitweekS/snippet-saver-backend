@@ -59,5 +59,5 @@ func GetAllSnippet(c *gin.Context) {
 		return
 	}
 
-	utilities.ApiResponse(http.StatusOK,"Snippet Created Successfully",snippets,c)
+	utilities.ApiResponse(http.StatusOK,"Operation executed Successfully",snippets,c)
 }
