@@ -11,18 +11,21 @@ func InitializeRoutes(router *gin.Engine) {
 	{
 		auth := v1.Group("auth")
 		{
-			auth.POST("/signin",handlers.SignIn)
+			auth.POST("/signin", handlers.SignIn)
 		}
-		snippets:= v1.Group("/snippets")
+		snippets := v1.Group("/snippets")
 		{
-			snippets.GET("/:id",handlers.GetAllSnippet)
+			snippets.GET("/:user_id", handlers.GetAllSnippet)
 			// create code snippet
-			snippets.POST("/:id",handlers.CreateSnippet)
-			// get snippet by tags
-			snippets.GET("/tags/:tag")
-			// get snippet by language
-			snippets.GET("/language/:lang")
+			snippets.POST("/:user_id", handlers.CreateSnippet)
+
+			//get single snippet
+			snippets.GET("/:user_id/:snippet_id", handlers.GetSnippetByID)
+			//edit the snippet
+			snippets.PUT("/:user_id/:snippet_id", handlers.UpdateSnippetById)
+			//delete the snippet
+			snippets.DELETE("/:user_id/:snippet_id", handlers.DeleteSnippetByID)
 		}
 	}
-	
+
 }
