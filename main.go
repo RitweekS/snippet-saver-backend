@@ -21,7 +21,7 @@ func main() {
 	router := gin.Default()
 	router.Use(middleware.CORSMiddleware())
 	internal.InitializeRoutes(router)
-	err := router.Run(":8080")
+	err := router.Run("0.0.0.0:3000")
 
 	if err != nil {
 		log.Fatal("Failed to run server", err)
