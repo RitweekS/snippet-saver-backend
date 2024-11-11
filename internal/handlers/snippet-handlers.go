@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"snippet-saver/internal/dto/request"
@@ -23,15 +24,15 @@ func CreateSnippet(c *gin.Context) {
 		return
 	}
 
-	snippetIdParam, snippetIdError := strconv.Atoi(c.Param("user_id"))
+	userId, userIdErr := utilities.GetUserID(c)
 
-	if snippetIdError != nil {
-		log.Println(http.StatusBadRequest, snippetIdError.Error())
-		utilities.ApiResponse(http.StatusBadRequest, snippetIdError.Error(), nil, c)
+	if userIdErr != nil {
+		log.Println(http.StatusBadRequest, userIdErr.Error())
+		utilities.ApiResponse(http.StatusBadRequest, userIdErr.Error(), nil, c)
 		return
 	}
 
-	_, createSnippetsErr := services.SnippetInstance.CreateSnippet(snippetIdParam, requestBody)
+	_, createSnippetsErr := services.SnippetInstance.CreateSnippet(userId, requestBody)
 
 	if createSnippetsErr != nil {
 		log.Println(http.StatusInternalServerError, createSnippetsErr.Error())
@@ -43,11 +44,11 @@ func CreateSnippet(c *gin.Context) {
 }
 
 func GetAllSnippet(c *gin.Context) {
-	userId, userIdErr := strconv.Atoi(c.Param("user_id"))
-
+	userId, userIdErr := utilities.GetUserID(c)
+	fmt.Println("serr", userId)
 	if userIdErr != nil {
 		log.Println(http.StatusBadRequest, userIdErr)
-		utilities.ApiResponse(http.StatusBadRequest, "Operation executed Successfully", response.GetSnippetResponse{}, c)
+		utilities.ApiResponse(http.StatusBadRequest, userIdErr.Error(), response.GetSnippetResponse{}, c)
 	}
 
 	snippets, snippetsErr := services.SnippetInstance.GetAllSnippet(userId)
@@ -62,7 +63,7 @@ func GetAllSnippet(c *gin.Context) {
 }
 
 func GetSnippetByID(c *gin.Context) {
-	userId, userIdErr := strconv.Atoi(c.Param("user_id"))
+	userId, userIdErr := utilities.GetUserID(c)
 
 	if userIdErr != nil {
 		log.Println(http.StatusInternalServerError, userIdErr.Error())
@@ -97,7 +98,7 @@ func UpdateSnippetById(c *gin.Context) {
 		utilities.ApiResponse(http.StatusBadRequest, parseBodyErr.Error(), nil, c)
 		return
 	}
-	userId, userIdErr := strconv.Atoi(c.Param("user_id"))
+	userId, userIdErr := utilities.GetUserID(c)
 
 	if userIdErr != nil {
 		log.Println(http.StatusInternalServerError, userIdErr.Error())
@@ -125,7 +126,7 @@ func UpdateSnippetById(c *gin.Context) {
 
 }
 func DeleteSnippetByID(c *gin.Context) {
-	userId, userIdErr := strconv.Atoi(c.Param("user_id"))
+	userId, userIdErr := utilities.GetUserID(c)
 
 	if userIdErr != nil {
 		log.Println(http.StatusInternalServerError, userIdErr.Error())

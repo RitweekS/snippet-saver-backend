@@ -1,46 +1,50 @@
 package middleware
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 )
 
+type Claims struct {
+	ID int `json:"id"`
+	jwt.RegisteredClaims
+}
 
 func Authentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Retrieve token directly from Authorization header
-		// tokenString := c.Request.Header.Get("Authorization")
-		// fmt.Println("Token String:", tokenString) // Debugging line to see token format
+		tokenString := c.Request.Header.Get("Authorization")
 
-		// if tokenString == "" {
-		// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
-		// 	c.Abort() // Stop further handlers from executing
-		// 	return
-		// }
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header missing"})
+			c.Abort()
+			return
+		}
+		claims := &Claims{}
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(os.Getenv("JWT_SECRET")), nil
+		})
 
-		// // Parse and validate the JWT token
-		// token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// 	// Ensure token method is HMAC
-		// 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		// 		return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		// 	}
-		// 	return jwtSecretKey, nil
-		// })
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			c.Abort()
+			return
+		}
 
-		// if err != nil || !token.Valid {
-		// 	fmt.Println("Token parse error:", err)
-		// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
-		// 	c.Abort()
-		// 	return
-		// }
+		if !token.Valid {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			c.Abort()
+			return
+		}
+		c.Set("userID", claims.ID)
+		c.Next()
 
-		// // Access claims if needed
-		// if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// 	fmt.Println("Token claims:", claims)
-		// 	// You can store claims in the context if needed
-		// 	c.Set("claims", claims)
-		// }
-
-		// Proceed to the next handler
 		c.Next()
 	}
 }
