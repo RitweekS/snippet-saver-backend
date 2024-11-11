@@ -8,6 +8,11 @@ import (
 )
 
 func InitializeRoutes(router *gin.Engine) {
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{
+			"message": "working",
+		})
+	})
 	v1 := router.Group("/v1")
 	{
 		auth := v1.Group("auth")
